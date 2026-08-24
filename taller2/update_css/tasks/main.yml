@@ -1,0 +1,16 @@
+---
+- name: Actualizar página de inicio personalizada
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: apache
+    group: apache
+    mode: '0644'
+
+- name: Copiar archivo de estilo CSS
+  template:
+    src: style.css.j2
+    dest: /var/www/html/style.css
+    owner: apache
+    group: apache
+    mode: '0644'

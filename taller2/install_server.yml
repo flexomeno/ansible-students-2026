@@ -1,0 +1,16 @@
+---
+- name: Configurar servidores web
+  hosts: webservers
+  become: yes
+  roles:
+    - webserver
+  tags: webserver
+
+- name: Actualizar sitio web si es necesario
+  hosts: webservers
+  become: yes
+  roles:
+    - role: update_css
+      when: update_type == "full_update"
+  tags: update_css
+
