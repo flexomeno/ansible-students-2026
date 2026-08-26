@@ -15,6 +15,12 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4
 
+      - name: Debug OIDC Token Claim
+        run:
+          echo "Ref actual: ${{ github.ref }}"
+          echo "Evento actual: ${{ github.event_name }}"
+          echo "Repo actual: ${{ github.repository }}"
+
       - name: Configurar credenciales de AWS vía OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
