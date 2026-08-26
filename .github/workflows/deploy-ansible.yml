@@ -38,7 +38,10 @@ jobs:
           pip install ansible boto3 botocore
 
       - name: Ejecutar Playbook de Ansible
+        working-directory: taller3
         env:
           AWS_REGION: us-east-1
         run: |
-          ansible-playbook taller3/crud.yml
+          ansible-galaxy collection install amazon.aws --force
+          ansible-inventory -i inventario.aws_ec2.yml --graph
+          ansible-playbook -i inventario.aws_ec2.yml crud.yml
