@@ -1,6 +1,7 @@
 name: Deploy with Ansible via AWS OIDC
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
