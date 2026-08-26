@@ -1,0 +1,40 @@
+name: Deploy with Ansible via AWS OIDC
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write # Requerido para autenticación OIDC
+  contents: read  # Requerido para checkout del código
+
+jobs:
+  ansible-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciales de AWS vía OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::314567760063:role/GitHubActionsAnsibleRole
+          aws-region: us-east-1
+
+      - name: Instalar Python y Ansible
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias de Ansible y AWS SDK
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible boto3 botocore
+
+      - name: Ejecutar Playbook de Ansible
+        env:
+          AWS_REGION: us-east-1
+        run: |
+          ansible-playbook -i inventory.ini deploy.yml
