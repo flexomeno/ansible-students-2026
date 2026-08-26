@@ -1,0 +1,12 @@
+---
+apache_vhosts:
+  - server_admin: webmaster@localhost
+    server_name: example.com
+    document_root: /var/www/html
+    error_log: error.log
+    custom_log: access.log
+
+site_title: "Mi Sitio Web"
+site_heading: "Bienvenidos a Mi Sitio Web"
+site_content: "Esta es la página de inicio personalizada creada con Ansible."
+

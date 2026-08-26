@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Productos</title> <!-- Título de la página -->
+</head>
+<body>
+    <h1>Lista de Productos</h1> <!-- Encabezado principal -->
+
+    <?php
+    $servername = "{{ db_host }}"; // IP del servidor MySQL
+    $username = "db_user";
+    $password = "db_password";
+    $dbname = "example_db";
+
+    try {
+        // Crear conexión
+        $conn = new mysqli($servername, $username, $password, $dbname);
+
+        // Verificar conexión
+        if ($conn->connect_error) {
+            throw new Exception("Connection failed: " . $conn->connect_error);
+        }
+
+        // Consulta SQL para obtener los datos de la tabla 'people'
+        $sql = "SELECT id, name, product FROM people";
+        $result = $conn->query($sql);
+
+        // Mostrar los resultados en una tabla HTML
+        if ($result->num_rows > 0) {
+            echo "<table border='1'><tr><th>ID</th><th>Nombre</th><th>Producto</th></tr>";
+            while($row = $result->fetch_assoc()) {
+                echo "<tr><td>" . $row["id"] . "</td><td>" . $row["name"] . "</td><td>" . $row["product"] . "</td></tr>";
+            }
+            echo "</table>";
+        } else {
+            echo "No se encontraron resultados.";
+        }
+    } catch (Exception $e) {
+        // Mostrar una alerta si ocurre un error
+        echo "<script>alert('Error: " . $e->getMessage() . "');</script>";
+    } finally {
+        // Cerrar conexión si fue creada
+        if (isset($conn) && $conn instanceof mysqli) {
+            $conn->close();
+        }
+    }
+    ?>
+</body>
+</html>

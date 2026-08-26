@@ -1,0 +1,30 @@
+- name: Install Apache and PHP
+  yum:
+    name:
+      - httpd
+      - php
+      - php-mysqli
+    state: present
+  ignore_errors: yes
+
+- name: Start Apache service
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+  ignore_errors: yes
+
+- name: Copy PHP script template
+  template:
+    src: index.php.j2
+    dest: /var/www/html/index.php
+  ignore_errors: yes
+
+- name: Set permissions on web root
+  file:
+    path: /var/www/html
+    state: directory
+    owner: apache
+    group: apache
+    mode: '0755'
+  ignore_errors: yes

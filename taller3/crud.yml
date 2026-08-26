@@ -1,0 +1,17 @@
+- hosts: database
+  become: yes
+  gather_facts: yes
+  roles:
+    - mysql
+
+- hosts: frontend
+  become: yes
+  tasks:
+  - name: Mostrar la IP de la base de datos
+    debug:
+      msg: "La IP de la base de datos es {{ hostvars[groups['database'][0]]['private_ip_address'] }}"
+  roles:
+    - webserver
+  vars:
+    db_host: "{{ hostvars[groups['database'][0]]['private_ip_address'] }}"
+

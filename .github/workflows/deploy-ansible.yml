@@ -41,4 +41,4 @@ jobs:
         env:
           AWS_REGION: us-east-1
         run: |
-          ansible-playbook -i inventory.ini deploy.yml
+          ansible-playbook taller3/crud.yml
