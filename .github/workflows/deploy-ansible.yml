@@ -2,9 +2,6 @@ name: Deploy with Ansible via AWS OIDC
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 permissions:
   id-token: write # Requerido para autenticación OIDC
