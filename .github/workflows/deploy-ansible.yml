@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Debug OIDC Token Claim
-        run:
+        run: |
           echo "Ref actual: ${{ github.ref }}"
           echo "Evento actual: ${{ github.event_name }}"
           echo "Repo actual: ${{ github.repository }}"
