@@ -36,12 +36,37 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install ansible boto3 botocore
+          ansible-galaxy collection install amazon.aws --force
+
+      - name: Instalar Session Manager Plugin
+        run: |
+          curl -fsSL "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o /tmp/session-manager-plugin.deb
+          sudo dpkg -i /tmp/session-manager-plugin.deb
+          session-manager-plugin --version
+
+      - name: Esperar instancias Online en SSM
+        run: |
+          for i in $(seq 1 30); do
+            ONLINE=$(aws ssm describe-instance-information \
+              --region us-east-1 \
+              --filters "Key=InstanceIds,Values=i-06085d5404274da86,i-0bc8751e0b15d365f" \
+              --query 'length(InstanceInformationList[?PingStatus==`Online`])' \
+              --output text)
+            echo "Intento $i: instancias Online=$ONLINE"
+            if [ "$ONLINE" = "2" ]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Timeout esperando SSM Online"
+          aws ssm describe-instance-information --region us-east-1 --output table
+          exit 1
 
       - name: Ejecutar Playbook de Ansible
         working-directory: taller3
         env:
           AWS_REGION: us-east-1
+          AWS_DEFAULT_REGION: us-east-1
         run: |
-          ansible-galaxy collection install amazon.aws --force
           ansible-inventory -i inventario.aws_ec2.yml --graph
           ansible-playbook -i inventario.aws_ec2.yml crud.yml
