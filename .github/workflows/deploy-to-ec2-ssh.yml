@@ -1,0 +1,51 @@
+name: Deploy Ansible to EC2
+
+on:
+  push:
+    #branches: [main]
+  workflow_dispatch:  # ← esto habilita ejecución manual
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: call secret
+      run: |
+        echo "${{ secrets.MY_NEW_SECRET }}"
+
+    - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        
+    - name: Set up Python & install Ansible + boto3
+      run: |
+        pip install --upgrade pip
+        pip install ansible boto3 botocore
+        ansible-galaxy collection install amazon.aws
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Retrieve Vault password from AWS Secrets Manager
+      run: |
+        ansible-playbook retrieve_vault_password.yml
+        
+    - name: Debug inventory output
+      working-directory: taller4
+      run: |
+        ansible-inventory -i inventario.aws_ec2.yml --list
+        
+    - name: Run Ansible playbook
+      working-directory: taller4
+      run: |
+        ansible-playbook site.yml --private-key ~/.ssh/id_ed25519
