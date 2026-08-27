@@ -1,0 +1,40 @@
+from flask import Flask, render_template, request, redirect
+import requests
+
+app = Flask(__name__)
+
+# URL de la API externa
+API_URL = "{{ api_url }}"
+
+@app.route('/')
+def index():
+    try:
+        response = requests.get(API_URL + "/people")
+        if response.status_code == 200:
+            people = response.json()
+        else:
+            people = []
+    except requests.exceptions.RequestException:
+        people = []
+
+    return render_template('people.html', people=people)
+
+@app.route('/add', methods=['POST'])
+def add_person():
+    name = request.form.get('name')
+    product = request.form.get('product')
+
+    if name and product:
+        try:
+            data = {"name": name, "product": product}
+            response = requests.post(API_URL + "/people", json=data)
+            if response.status_code == 204:
+                return redirect('/')
+        except requests.exceptions.RequestException:
+            pass
+    
+    return "Error al agregar la persona", 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port={{ frontend_port }}, debug=True)
+

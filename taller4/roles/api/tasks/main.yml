@@ -1,0 +1,53 @@
+---
+- name: Install dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ pyhon_packages }}"
+
+- name: Install Flask and MySQL connector
+  pip:
+    name: "{{ item }}"
+  loop: "{{ pip_packages }}"
+
+- name: Find the process using port 5000
+  shell: "lsof -t -i :5000"
+  register: pid_on_port
+  ignore_errors: yes
+
+- name: Kill the process using port 5000
+  shell: "kill -9 {{ pid_on_port.stdout }}"
+  when: pid_on_port.stdout != ""
+  ignore_errors: yes
+
+- name: Deploy API application
+  template:
+    src: app.py.j2
+    dest: /home/ec2-user/app.py
+    mode: 0755
+
+- name: Create systemd service for Python app
+  copy:
+    dest: /etc/systemd/system/app.service
+    content: |
+      [Unit]
+      Description=Python App
+
+      [Service]
+      ExecStart=/usr/bin/python3 /home/ec2-user/app.py
+      WorkingDirectory=/home/ec2-user
+      Restart=always
+      User=ec2-user
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start the Python app service
+  systemd:
+    name: app
+    enabled: yes
+    state: started

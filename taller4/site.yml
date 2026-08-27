@@ -1,0 +1,39 @@
+---
+- name: Gather database facts
+  hosts: database
+  gather_facts: yes
+  tasks:
+    - name: Set the database IP address
+      set_fact:
+        host_db: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+      with_items: "{{ groups['database'] }}"
+      run_once: yes
+
+- name: Provision the database server
+  hosts: database
+  roles:
+    - database
+  become: true
+
+- name: Gather database facts
+  hosts: database
+  tasks:
+    - name: Gather facts about the database instance
+      setup:
+
+- name: Provision the API server
+  hosts: api
+  roles:
+    - api
+  become: true
+  vars:
+    host_db: "{{ hostvars[groups['database'][0]]['ansible_default_ipv4']['address'] }}"
+
+- name: Install the frontend
+  hosts: frontend
+  gather_facts: yes
+  roles:
+    - frontend
+  become: true
+  vars:
+    api_url: "http://{{ hostvars[groups['api'][0]]['ansible_default_ipv4']['address'] }}:5000"

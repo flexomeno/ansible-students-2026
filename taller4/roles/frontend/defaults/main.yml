@@ -1,0 +1,5 @@
+---
+api_url: api_url
+frontend_port: 5001
+app_dir: "/opt/flask_frontend"
+python_version: "python3"

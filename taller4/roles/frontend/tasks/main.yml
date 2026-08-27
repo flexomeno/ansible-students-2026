@@ -1,0 +1,61 @@
+---
+- name: Instalar paquetes necesarios
+  ansible.builtin.yum:
+    name:
+      - "{{ python_version }}"
+      - "{{ python_version }}-pip"
+    state: present
+
+- name: Instalar dependencias de Python
+  ansible.builtin.pip:
+    name:
+      - flask
+      - requests
+
+- name: Crear directorio de la aplicación
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: '0755'
+
+- name: Copiar la aplicación Flask desde la plantilla
+  ansible.builtin.template:
+    src: "app.py.j2"
+    dest: "{{ app_dir }}/app.py"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0644'
+  notify: Reiniciar Flask Frontend
+
+- name: Crear la carpeta si no existe
+  ansible.builtin.file:
+    path: "{{ app_dir }}/templates/"
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: '0755'
+  
+- name: Copiar people
+  ansible.builtin.copy:
+    src: "people.html"
+    dest: "{{ app_dir }}/templates/people.html"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0644'
+  notify: Reiniciar Flask Frontend
+
+- name: Copiar archivo systemd para Flask
+  ansible.builtin.template:
+    src: "flask_frontend.service.j2"
+    dest: "/etc/systemd/system/flask_frontend.service"
+    mode: '0644'
+  notify: Recargar Systemd
+
+- name: Iniciar y habilitar el servicio Flask
+  ansible.builtin.systemd:
+    name: flask_frontend
+    enabled: yes
+    state: started
+

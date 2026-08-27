@@ -1,0 +1,10 @@
+---
+- name: Reiniciar Flask Frontend
+  ansible.builtin.systemd:
+    name: flask_frontend
+    state: restarted
+
+- name: Recargar Systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+

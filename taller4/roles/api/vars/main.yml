@@ -1,0 +1,7 @@
+pyhon_packages:
+  - python3
+  - python3-pip
+pip_packages:
+  - flask
+  - pymysql
+  - flask-cors

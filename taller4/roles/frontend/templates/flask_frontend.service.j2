@@ -1,0 +1,13 @@
+[Unit]
+Description=Flask Frontend Service
+After=network.target
+
+[Service]
+User=ec2-user
+WorkingDirectory={{ app_dir }}
+ExecStart=/usr/bin/python3 {{ app_dir }}/app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

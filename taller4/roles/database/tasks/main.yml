@@ -1,0 +1,70 @@
+---
+- name: Install MySQL
+  dnf:
+    name: mariadb105-server
+    state: present
+  when: ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution'] == 'Amazon'
+
+- name: Install MariaDB on Ubuntu
+  apt:
+    name: mariadb-server
+    state: present
+    update_cache: yes
+  when: ansible_facts['os_family'] == 'Debian' and ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Start and enable MariaDB
+  systemd:
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: Ensure pip is installed
+  dnf:
+    name: python3-pip
+    state: present
+
+- name: Install required Python packages
+  pip:
+    name: PyMySQL
+    state: present
+
+- name: Secure MariaDB installation
+  shell: >
+    mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ db_root_password }}';
+    DELETE FROM mysql.user WHERE User='';
+    DROP DATABASE IF EXISTS test;
+    DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+    FLUSH PRIVILEGES;"
+  args:
+    executable: /bin/bash
+  ignore_errors: true
+
+- name: Create database
+  mysql_db:
+    name: example_db
+    state: present
+    login_user: root
+    login_password: "{{ db_root_password }}"
+
+- name: Create application user
+  mysql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    priv: 'example_db.*:ALL'
+    state: present
+    host: '%'
+    login_user: root
+    login_password: "{{ db_root_password }}"
+
+- name: Copy SQL template
+  template:
+    src: create_database.sql.j2
+    dest: /tmp/create_database.sql
+
+- name: Populate the database
+  mysql_db:
+    name: example_db
+    state: import
+    target: /tmp/create_database.sql
+    login_user: root
+    login_password: "{{ db_root_password }}"
