@@ -43,32 +43,6 @@ jobs:
           curl -fsSL "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o /tmp/session-manager-plugin.deb
           sudo dpkg -i /tmp/session-manager-plugin.deb
           session-manager-plugin --version
-
-      - name: Esperar instancias Online en SSM
-        run: |
-          INSTANCE_IDS=$(aws ec2 describe-instances \
-            --region us-east-1 \
-            --filters "Name=tag:Name,Values=ansible_app_ws*" "Name=instance-state-name,Values=running" \
-            --query 'Reservations[].Instances[].InstanceId' \
-            --output text | tr '\t' ',')
-          EXPECTED=$(echo "$INSTANCE_IDS" | tr ',' '\n' | grep -c .)
-          echo "IDs a esperar: $INSTANCE_IDS"
-          echo "Instancias running esperadas: $EXPECTED"
-          for i in $(seq 1 30); do
-            ONLINE=$(aws ssm describe-instance-information \
-              --region us-east-1 \
-              --filters "Key=InstanceIds,Values=$INSTANCE_IDS" \
-              --query 'length(InstanceInformationList[?PingStatus==`Online`])' \
-              --output text)
-            echo "Intento $i: instancias Online=$ONLINE / Esperadas=$EXPECTED"
-            if [ "$ONLINE" = "$EXPECTED" ] && [ "$EXPECTED" != "0" ]; then
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Timeout esperando SSM Online"
-          aws ssm describe-instance-information --region us-east-1 --output table
-          exit 1
   
       - name: Retrieve Vault password from AWS Secrets Manager
         run: |
