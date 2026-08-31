@@ -46,16 +46,18 @@ jobs:
 
       - name: Esperar instancias Online en SSM
         run: |
-          EXPECTED=$(aws ec2 describe-instances \
+          INSTANCE_IDS=$(aws ec2 describe-instances \
             --region us-east-1 \
             --filters "Name=tag:Name,Values=ansible_app_ws*" "Name=instance-state-name,Values=running" \
-            --query 'length(Reservations[].Instances[])' \
-            --output text)
+            --query 'Reservations[].Instances[].InstanceId' \
+            --output text | tr '\t' ',')
+          EXPECTED=$(echo "$INSTANCE_IDS" | tr ',' '\n' | grep -c .)
+          echo "IDs a esperar: $INSTANCE_IDS"
           echo "Instancias running esperadas: $EXPECTED"
           for i in $(seq 1 30); do
             ONLINE=$(aws ssm describe-instance-information \
               --region us-east-1 \
-              --filters "Key=tag:Name,Values=ansible_app_ws*" \
+              --filters "Key=InstanceIds,Values=$INSTANCE_IDS" \
               --query 'length(InstanceInformationList[?PingStatus==`Online`])' \
               --output text)
             echo "Intento $i: instancias Online=$ONLINE / Esperadas=$EXPECTED"
