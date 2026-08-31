@@ -1,7 +1,7 @@
 name: Deploy Ansible to EC2
 
 on:
-  push:
+  #push:
     #branches: [main]
   workflow_dispatch:  # ← esto habilita ejecución manual
 
