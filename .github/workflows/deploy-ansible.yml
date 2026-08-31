@@ -61,9 +61,13 @@ jobs:
           echo "Timeout esperando SSM Online"
           aws ssm describe-instance-information --region us-east-1 --output table
           exit 1
+  
+      - name: Retrieve Vault password from AWS Secrets Manager
+        run: |
+          ansible-playbook retrieve_vault_password.yml
 
       - name: Ejecutar Playbook de Ansible
-        working-directory: taller3
+        working-directory: taller4
         env:
           AWS_REGION: us-east-1
           AWS_DEFAULT_REGION: us-east-1
