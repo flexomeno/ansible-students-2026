@@ -4,10 +4,11 @@ filters:
 regions:
   - us-east-1
 hostnames:
-  - ip-address
+  - instance-id
 compose:
   ansible_user: "'ec2-user'"
-  ansible_ssh_private_key_file: "'~/.ssh/id_ed25519'"
+  ansible_connection: "'aws_ssm'"
+  ansible_aws_ssm_region: "'us-east-1'"
 keyed_groups:
   - key: tags.Application
     separator: ''
