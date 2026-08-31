@@ -81,4 +81,4 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: |
           ansible-inventory -i inventario.aws_ec2.yml --graph
-          ansible-playbook -i inventario.aws_ec2.yml crud.yml
+          ansible-playbook -i inventario.aws_ec2.yml site.yml
